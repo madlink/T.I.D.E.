@@ -116,6 +116,7 @@ namespace AtfTIDE.QueryExecutor{
 		private AtfGitServer FindDefaultGitServer(UserConnection userConnection) {
 			IDataProvider provider  = new LocalDataProvider(userConnection);
 			IAppDataContext ctx = ATF.Repository.AppDataContextFactory.GetAppDataContext(provider);
+			
 			return ctx
 				.Models<AtfGitServer>()
 				.FirstOrDefault(i => i.Default == true);

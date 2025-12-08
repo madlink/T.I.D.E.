@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using AtfTIDE.ClioInstaller;
+using AtfTIDE.Logging;
 using Common.Logging;
 using ErrorOr;
 using Terrasoft.Core;
@@ -77,11 +78,54 @@ namespace AtfTIDE
 						.InfoFormat(CultureInfo.InvariantCulture,  $"Updating SysSetting AtfTideUpdateAvailable to: {updateAvailable}, AtfTideVersion: {version}, NugetMaxTideVersion: {nugetMaxTideVersion}");
 				SysSettings.SetDefValue(userConnection, "AtfTideUpdateAvailable", updateAvailable);
 			}
-			
-			
-			// clio gate -e 
-			
+
+			if (!IsGitConsoleInstalled()) {
+				var lLogger = TideApp.Instance.GetRequiredService<ILiveLogger>();
+				lLogger.LogInfo("Git console is not installed. Installing...");
+				var result = InstallConsoleGit();
+				if (result.IsError) {
+					lLogger.LogError(result.FirstError.Code + " - " + result.FirstError.Description);
+				}
+				else {
+					lLogger.LogInfo("Git console installed successfully.");
+				}
+			}
 		}
+		
+		private static bool IsGitConsoleInstalled() {
+			string gitConsoleDir = HelperFunctions.GetGitConsoleFolderPath();
+			return Directory.Exists(gitConsoleDir);
+		}
+		
+		
+		private static ErrorOr<string> InstallConsoleGit() {
+			try {
+				ILog logger = LogManager.GetLogger(TideConsts.LoggerName);
+
+				string archiveZipPath = HelperFunctions.GetArchivePath();
+				string destFolder = HelperFunctions.GetGitConsoleFolderPath();
+				logger.Info($"Unzipping archive from {archiveZipPath} to {destFolder}");
+
+				HelperFunctions.DeleteDirectoryRecursively(new DirectoryInfo(destFolder));
+				if (!Directory.Exists(destFolder)) {
+					Directory.CreateDirectory(destFolder);
+				}
+
+				logger.Info($"Deleted existing directory: {destFolder}");
+
+				string destArchivePath = Path.Combine(destFolder, "archive.zip");
+				File.Copy(archiveZipPath, destArchivePath, true);
+				HelperFunctions.UnzipArchive(destArchivePath, destFolder);
+				logger.Info($"Unzipped archive to {destFolder}");
+				File.Delete(destArchivePath);
+				logger.Info($"Deleted temporary archive file: {destArchivePath}");
+				return destFolder;
+			}
+			catch(Exception ex) {
+				return Error.Failure(nameof(InstallConsoleGit), $"Failed to install Git console: {ex.Message}");
+			}
+		}
+		
 
 		/// <summary>
 		/// Checks whether Clio is considered installed by verifying that:
@@ -193,7 +237,6 @@ namespace AtfTIDE
 		public void OnSessionStart(AppEventContext context){
 			return;
 		}
-
 		public void OnSessionEnd(AppEventContext context){
 			return;
 		}

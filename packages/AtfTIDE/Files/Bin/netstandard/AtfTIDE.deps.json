@@ -16,7 +16,8 @@
           "System.IO.Abstractions": "22.0.16",
           "System.Net.Http": "4.3.4",
           "System.Text.Json": "9.0.8",
-          "ATF.Repository": "2.0.1.0"
+          "ATF.Repository": "2.0.1.0",
+          "Terrasoft.Configuration": "8.3.1.4481"
         },
         "runtime": {
           "AtfTIDE.dll": {}
@@ -517,6 +518,14 @@
             "fileVersion": "2.0.1.0"
           }
         }
+      },
+      "Terrasoft.Configuration/8.3.1.4481": {
+        "runtime": {
+          "Terrasoft.Configuration.dll": {
+            "assemblyVersion": "8.3.1.4481",
+            "fileVersion": "8.3.1.4481"
+          }
+        }
       }
     }
   },
@@ -919,6 +928,11 @@
       "hashPath": "testably.abstractions.filesystem.interface.9.0.0.nupkg.sha512"
     },
     "ATF.Repository/2.0.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Terrasoft.Configuration/8.3.1.4481": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

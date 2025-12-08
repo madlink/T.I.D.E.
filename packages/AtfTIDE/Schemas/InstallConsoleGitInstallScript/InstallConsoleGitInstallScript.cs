@@ -12,7 +12,7 @@ namespace Terrasoft.Configuration
 	public class InstallConsoleGitInstallScript : IInstallScriptExecutor {
 		public void Execute(UserConnection userConnection) {
 			
-			var logger = LogManager.GetLogger("TIDE");
+			var logger = LogManager.GetLogger("AtfTide");
 			
 			var archiveZipPath = HelperFunctions.GetArchivePath();
 			var destFolder = HelperFunctions.GetGitConsoleFolderPath();

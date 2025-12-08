@@ -46,7 +46,7 @@ namespace AtfTIDE {
 
 		private static ServiceProvider Init(){
 			ServiceCollection serviceCollection = new ServiceCollection();
-			serviceCollection.AddSingleton(LogManager.GetLogger("AtfTide"));
+			serviceCollection.AddSingleton(LogManager.GetLogger(TideConsts.LoggerName));
 			serviceCollection.AddSingleton<IInstaller, Installer>();
 			serviceCollection.AddSingleton<IFileSystem, FileSystem>();
 			serviceCollection.AddSingleton<ILiveLogger, LiveLogger>();

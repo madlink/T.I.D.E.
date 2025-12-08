@@ -34,77 +34,6 @@ namespace AtfTIDE.WebServices{
     [ServiceContract]
     [AspNetCompatibilityRequirements(RequirementsMode = AspNetCompatibilityRequirementsMode.Required)]
     public class Tide : BaseService, IReadOnlySessionState{
-        #region Methods: Private
-
-        /// <summary>
-        ///     Recursively deletes the specified directory and all its files and subdirectories if it exists.
-        /// </summary>
-        /// <param name="directory">Root directory to delete. If it does not exist the method returns immediately.</param>
-        /// <remarks>
-        ///     Resets file attributes to Normal before deletion to avoid issues with read-only files.
-        ///     Processes subdirectories depth-first. Exceptions are not caught; caller should handle failures.
-        /// </remarks>
-        private static void DeleteDirectoryRecursively(DirectoryInfo directory) {
-            if (!directory.Exists) {
-                return;
-            }
-
-            // Delete all files
-            foreach (FileInfo file in directory.GetFiles()) {
-                file.Attributes = FileAttributes.Normal;
-                file.Delete();
-            }
-
-            // Recursively delete all subdirectories
-            foreach (DirectoryInfo subDirectory in directory.GetDirectories()) {
-                DeleteDirectoryRecursively(subDirectory);
-            }
-
-            // Delete the empty directory
-            directory.Delete(false);
-        }
-
-
-        /// <summary>
-        ///     Extracts all entries from the specified ZIP archive into the given destination directory,
-        ///     recreating the original folder structure.
-        /// </summary>
-        /// <param name="archivePath">Full path to the ZIP archive to extract.</param>
-        /// <param name="destinationPath">Target directory for extracted files. Created if it does not exist.</param>
-        /// <remarks>
-        ///     Skips directory entries (length == 0) except for ensuring their existence.
-        ///     Overwrites existing files unconditionally.
-        ///     Caller should ensure the archive is trusted to avoid zip-slip or malicious payload issues.
-        /// </remarks>
-        private static void UnzipArchive(string archivePath, string destinationPath) {
-            using (Stream archiveStream = new FileStream(archivePath, FileMode.Open)) {
-                using (ZipArchive arch = new ZipArchive(archiveStream, ZipArchiveMode.Read, false)) {
-                    foreach (ZipArchiveEntry entry in arch.Entries) {
-                        string fullName = entry.FullName;
-                        long length = entry.Length;
-                        string destFilePath = Path.Combine(destinationPath, fullName);
-                        string dir = Path.GetDirectoryName(destFilePath);
-                        if (dir != null && !Directory.Exists(dir)) {
-                            Directory.CreateDirectory(dir);
-                        }
-
-                        if (length > 0) {
-                            //otherwise it is an empty file
-                            using (Stream stream = entry.Open()) {
-                                FileSystem fs = new FileSystem();
-                                using (FileSystemStream fileStream = fs.File.Create(destFilePath)) {
-                                    stream.CopyTo(fileStream, (int)length);
-                                    fileStream.Flush();
-                                    fileStream.Close();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        #endregion
 
         #region Methods: Public
 
@@ -210,10 +139,6 @@ namespace AtfTIDE.WebServices{
                 .Execute(args);
             return "OK";
         }
-
-        
-        
-        
         
         
         /// <summary>
@@ -282,13 +207,13 @@ namespace AtfTIDE.WebServices{
         [WebInvoke(Method = "GET", RequestFormat = WebMessageFormat.Json,
             BodyStyle = WebMessageBodyStyle.Bare, ResponseFormat = WebMessageFormat.Json)]
         public string InstallConsoleGit() {
-            ILog logger = LogManager.GetLogger("TIDE");
+            ILog logger = LogManager.GetLogger(TideConsts.LoggerName);
 
             string archiveZipPath = HelperFunctions.GetArchivePath();
             string destFolder = HelperFunctions.GetGitConsoleFolderPath();
             logger.Info($"Unzipping archive from {archiveZipPath} to {destFolder}");
 
-            DeleteDirectoryRecursively(new DirectoryInfo(destFolder));
+            HelperFunctions.DeleteDirectoryRecursively(new DirectoryInfo(destFolder));
             if (!Directory.Exists(destFolder)) {
                 Directory.CreateDirectory(destFolder);
             }
@@ -297,7 +222,7 @@ namespace AtfTIDE.WebServices{
 
             string destArchivePath = Path.Combine(destFolder, "archive.zip");
             File.Copy(archiveZipPath, destArchivePath, true);
-            UnzipArchive(destArchivePath, destFolder);
+            HelperFunctions.UnzipArchive(destArchivePath, destFolder);
             logger.Info($"Unzipped archive to {destFolder}");
             File.Delete(destArchivePath);
             logger.Info($"Deleted temporary archive file: {destArchivePath}");

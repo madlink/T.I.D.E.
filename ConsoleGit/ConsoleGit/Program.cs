@@ -54,7 +54,6 @@ public static class Program
 #endif
 										services.AddScoped<LoginHandler>();
 										services.AddSingleton<CookieContainer>();
-										services.AddScoped<DownloadPackagesCommand>();
 										services.AddScoped<CloneCommand>();
 										services.AddScoped<PullCommand>();
 										services.AddScoped<CheckoutCommand>();

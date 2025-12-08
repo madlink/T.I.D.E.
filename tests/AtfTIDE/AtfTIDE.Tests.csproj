@@ -57,6 +57,7 @@
         <PackageReference Include="Castle.Core" version="5.2.1" />
         <PackageReference Include="Ninject" version="3.3.6" />
         <PackageReference Include="NSubstitute" version="3.1.0" />
+        <PackageReference Include="NUnit.Allure" Version="1.2.1.1" />
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="System.Net.Http.Json" Version="8.0.1" />
         <Reference Condition="'$(TargetFramework)' == 'net472'" Include="System.Net.Http.Json" Version="8.0.1">
             <HintPath>$(TestCoreLibPath)/System.Net.Http.Json.dll</HintPath>

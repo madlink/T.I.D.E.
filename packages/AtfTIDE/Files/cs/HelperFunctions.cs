@@ -4,6 +4,8 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Principal;
 using System.Text;
@@ -116,6 +118,76 @@ namespace AtfTIDE{
         #endregion
 
         #region Methods: Public
+        
+        
+        /// <summary>
+        ///     Recursively deletes the specified directory and all its files and subdirectories if it exists.
+        /// </summary>
+        /// <param name="directory">Root directory to delete. If it does not exist the method returns immediately.</param>
+        /// <remarks>
+        ///     Resets file attributes to Normal before deletion to avoid issues with read-only files.
+        ///     Processes subdirectories depth-first. Exceptions are not caught; caller should handle failures.
+        /// </remarks>
+        public static void DeleteDirectoryRecursively(DirectoryInfo directory) {
+            if (!directory.Exists) {
+                return;
+            }
+
+            // Delete all files
+            foreach (FileInfo file in directory.GetFiles()) {
+                file.Attributes = FileAttributes.Normal;
+                file.Delete();
+            }
+
+            // Recursively delete all subdirectories
+            foreach (DirectoryInfo subDirectory in directory.GetDirectories()) {
+                DeleteDirectoryRecursively(subDirectory);
+            }
+
+            // Delete the empty directory
+            directory.Delete(false);
+        }
+
+
+        /// <summary>
+        ///     Extracts all entries from the specified ZIP archive into the given destination directory,
+        ///     recreating the original folder structure.
+        /// </summary>
+        /// <param name="archivePath">Full path to the ZIP archive to extract.</param>
+        /// <param name="destinationPath">Target directory for extracted files. Created if it does not exist.</param>
+        /// <remarks>
+        ///     Skips directory entries (length == 0) except for ensuring their existence.
+        ///     Overwrites existing files unconditionally.
+        ///     Caller should ensure the archive is trusted to avoid zip-slip or malicious payload issues.
+        /// </remarks>
+        public static void UnzipArchive(string archivePath, string destinationPath) {
+            using (Stream archiveStream = new FileStream(archivePath, FileMode.Open)) {
+                using (ZipArchive arch = new ZipArchive(archiveStream, ZipArchiveMode.Read, false)) {
+                    foreach (ZipArchiveEntry entry in arch.Entries) {
+                        string fullName = entry.FullName;
+                        long length = entry.Length;
+                        string destFilePath = Path.Combine(destinationPath, fullName);
+                        string dir = Path.GetDirectoryName(destFilePath);
+                        if (dir != null && !Directory.Exists(dir)) {
+                            Directory.CreateDirectory(dir);
+                        }
+
+                        if (length > 0) {
+                            //otherwise it is an empty file
+                            using (Stream stream = entry.Open()) {
+                                FileSystem fs = new FileSystem();
+                                using (FileSystemStream fileStream = fs.File.Create(destFilePath)) {
+                                    stream.CopyTo(fileStream, (int)length);
+                                    fileStream.Flush();
+                                    fileStream.Close();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
 
         /// <summary>
         ///     Adds or updates the stored Clio command line arguments for the specified user.

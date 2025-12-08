@@ -39,7 +39,7 @@ namespace GitAbstraction
 		private UsernamePasswordCredentials Credentials { get; }
 
 		private CredentialsHandler CredentialsProvider => (url, user, types) => Credentials;
-
+		
 		private IFileSystem FileSystem { get; }
 
 		private Uri GitUrl { get; }
@@ -85,7 +85,11 @@ namespace GitAbstraction
 		/// <param name="repoDirectory">The directory where the repository will be cloned.</param>
 		/// <returns>A new instance of the <see cref="GitRepository"/> class.</returns>
 		public static GitRepository GetInstance(string username, string password, Uri gitUrl, string repoDirectory) {
-			UsernamePasswordCredentials usernamePasswordCredentials = new UsernamePasswordCredentials() { Username = username, Password = password };
+			UsernamePasswordCredentials usernamePasswordCredentials = new () {
+				Username = username, 
+				Password = password,
+				
+			};
 			return new GitRepository(usernamePasswordCredentials, gitUrl, repoDirectory);
 		}
 		
@@ -118,6 +122,7 @@ namespace GitAbstraction
 		/// <param name="branchName">
 		///  Branch name for checkout.
 		///  An <see cref="ErrorOr{T}" /> containing the path to the cloned repository or an error.
+		/// </param>
 		/// </returns>
 		/// <seealso href="https://github.com/libgit2/libgit2sharp/wiki/git-clone">libgit2sharp Wiki Clone</seealso>
 		public ErrorOr<string> Clone(string branchName = null) {
@@ -128,7 +133,7 @@ namespace GitAbstraction
 				RepoDirectory.Create();
 			}
 			
-			CloneOptions cloneOptions = new CloneOptions() {
+			CloneOptions cloneOptions = new () {
 				Checkout = true,
 				RecurseSubmodules = true,
 				BranchName = string.IsNullOrWhiteSpace(branchName) ? null : branchName,
