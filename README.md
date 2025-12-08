@@ -100,7 +100,7 @@ During installation, TIDE installs to the target Creatio two additional componen
 
 If your source control operations are failing, check that those two components are installed. TIDE -> Actions -> Install console git
 
-Also check if your token is valid and has read/write permissions.
+Also check if your token is valid and has read/write permissions...
 
 ## Business Processes 
 Open Process log, see what business processes from package *AtfTIDE* were executed. Select a process -> *Execution diagram* to see its execution details. You can [enable business process tracing](https://academy.creatio.com/docs/user/bpm_tools/business_process_administration/trace_process_parameters/trace_process) to get more details.
