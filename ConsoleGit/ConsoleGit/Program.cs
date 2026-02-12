@@ -1,4 +1,8 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using ConsoleGit.Commands;
 using ConsoleGit.ConfiguredHttpClient;
 using ConsoleGit.Services;
